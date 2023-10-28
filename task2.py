@@ -33,9 +33,12 @@ class Task2:
             names_dict = results[0].names
             probs = results[0].probs.data
             predicted_name = names_dict[probs.argmax().item()]
-            
-            # Print the predicted name
-            print(predicted_name)
+
+            # Calculate confidence as a percentage
+            confidence = probs.max().item() * 100
+
+            # Print the predicted name and confidence
+            print(predicted_name, "  confidence: {:.2f}%".format(confidence))
             
             # Exit the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
