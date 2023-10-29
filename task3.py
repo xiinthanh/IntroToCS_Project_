@@ -23,3 +23,9 @@ class Task3:
 task3 = Task3("studentIist.txt")
 student_ID = "10421102"
 print(task3.Task3_Run(student_ID))
+
+
+
+
+//file ds học sinh đi xe bus
+"C:\Users\THIS PC\Desktop\New folder\studentIist.txt"
