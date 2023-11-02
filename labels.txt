@@ -1,3 +1,0 @@
-0 Student card
-1 Not a student card
-2  Not a student card
