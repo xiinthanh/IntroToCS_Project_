@@ -1,56 +1,74 @@
 import cv2
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
+from camera import *
+import time
 
-class Task2:
-    def __init__(self):
+class FaceRecognizer:
+    file_path = '.\\AI\\FaceRecognition.pt'
+
+    def __init__(self, _ID, _task_Ready, _task_Data, _func):
         print("Init task 2")
-    
-    def Task2_Run(self):
-        print("Task 2 is activated!!!!")
         
         # Load the custom model
-        model = YOLO('FaceRecognition.pt')
+        self.model = YOLO(self.file_path)
+
+        self.ID = _ID
+        self.task_Ready = _task_Ready
+        self.task_Data = _task_Data
+        self.grabImage = _func
+
+    def Run(self):
+        '''return a string student id if recognizable, "Unkown" otherwise'''
+
+        if (not self.task_Ready[self.ID]):  # There is no data
+            return "[i]"
+
+        print("#"*30)
+        print("Face detecting...")
         
-        # Open the webcam
-        capture = cv2.VideoCapture(0)
-        
-        # Matplotlib figure setup
-        fig, ax = plt.subplots()
-        image = ax.imshow(cv2.cvtColor(capture.read()[1], cv2.COLOR_BGR2RGB))  # Display the first frame
-        
-        while True:
-            # Read a frame from the webcam
-            ret, frame = capture.read()
-            
-            # Update the image in the figure
-            image.set_data(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            plt.pause(0.01)  # Pause for a short duration to allow the figure to update
-            plt.draw()
+        result = "Unknown"
+
+        for i in range(10):  # Try detect for 10 times
+            time.sleep(0.2)
+            print(f"Attempt {i+1}th")
+            # Get and save to ".\images\from_cam.png"
+            self.grabImage()
+
+            # Open image
+            image = cv2.imread(".\\images\\from_cam.png")
             
             # Perform classification on the frame
-            results = model(frame)
+            results = self.model(image)
             names_dict = results[0].names
             probs = results[0].probs.data
-            predicted_name = names_dict[probs.argmax().item()]
+            predicted_id = names_dict[probs.argmax().item()]
 
             # Calculate confidence as a percentage
             confidence = probs.max().item() * 100
 
             # Print the predicted name and confidence
-            print(predicted_name, "  confidence: {:.2f}%".format(confidence))
-            
-            # Exit the loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            print(predicted_id, "  confidence: {:.2f}%".format(confidence))
+
+            # Confirm if confidence score over 70% 
+            if (confidence > 70):
+                result = predicted_id
                 break
-        
-        # Release the webcam, close the window, and release the figure
-        capture.release()
-        cv2.destroyAllWindows()
-        plt.close(fig)
+
+        # Creating the cycle: task1 -> task2 -> task3 -> task4
+        if (result != "Unknown"):
+            self.task_Ready[self.ID + 1] = True
+            self.task_Data[self.ID + 1] = result
+
+        else:
+            # Restart the cycle: return to the first task
+            self.task_Ready[0] = True
+
+        self.task_Ready[self.ID] = False
+
+        return ("[1]" + result)
 
 # Create an instance of the Task2 class
-task2 = Task2()
-
-# Run Task2
-task2.Task2_Run()
+if __name__ == "__main__":
+    recognizer = FaceRecognizer()
+    print(recognizer.Run())
