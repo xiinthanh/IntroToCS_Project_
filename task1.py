@@ -1,51 +1,73 @@
-from keras.models import load_model  # TensorFlow is required for Keras to work
-import cv2  # Install opencv-python
+import cv2
 import numpy as np
-class Task1:
-    model = None
-    class_names = None
+from keras.models import load_model
+from camera import *
 
-    def __init__(self, index, url):
+
+class StudentCardDetector:
+    model_path = ".\\AI\\keras_Model.h5"
+    labels_path = ".\\AI\\labels.txt"
+
+    def __init__(self, _ID, _task_Ready, _task_Data, _func):
         print("Init task 1")
-        np.set_printoptions(suppress=True)
+        # Load model & labels
+        self.model = load_model(self.model_path, compile=False)
+        self.class_names = open(self.labels_path, "r").readlines()
 
-        # Load the model
-        self.model = load_model("keras_Model.h5", compile=False)
+        self.ID = _ID
+        self.task_Ready = _task_Ready
+        self.task_Data = _task_Data
+        # tell the camera to capture the image
+        self.grabImage = _func
 
-        # Load the labels
-        self.class_names = open("labels.txt", "r").readlines()
+    def Run(self):
+        # There is no data to run
+        if (not self.task_Ready[self.ID]):
+            return "[i]"
 
-        # CAMERA can be 0 or 1 based on default camera of your computer
-        self.camera = cv2.VideoCapture(index)
-        self.cameraID =  index
-        return
+        print("#"*30)
+        print("Student Card detecting...")
+    
+        # Get and save to ".\images\from_cam.png"
+        self.grabImage()
 
-    def Task1_Run(self):
-        print("Task 1 is activated!!!!")
-        # Grab the webcamera's image.
-        ret, image = self.camera.read()
-        cv2.imwrite("task"+ str(self.cameraID) + ".png", image)
+        is_student_card = "False"
 
-        # Resize the raw image into (224-height,224-width) pixels
-        image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
-
-        # Show the image in a window
-        #cv2.imshow("Webcam Image", image)
-
-
-        # Make the image a numpy array and reshape it to the models input shape.
+        # Open image
+        image = cv2.imread(".\\images\\from_cam.png")
+        # Modify the image for detection
         image = np.asarray(image, dtype=np.float32).reshape(1, 224, 224, 3)
-
-        # Normalize the image array
         image = (image / 127.5) - 1
-
-        # Predicts the model
+        
+        # Predict
         prediction = self.model.predict(image)
         index = np.argmax(prediction)
         class_name = self.class_names[index]
         confidence_score = prediction[0][index]
-
-        # Print prediction and confidence score
         print("Class:", class_name[2:], end="")
         print("Confidence Score:", str(np.round(confidence_score * 100))[:-2], "%")
+
+        # If dectect student card with over 70% confidence, confirm
+        if (index == 0 and confidence_score > 0.70):
+            is_student_card = "True"
+        
+        # Creating the cycle: task1 -> task2 -> task3 -> task4
+        # First task in the chain
+        if (is_student_card == "True"):
+            self.task_Ready[self.ID + 1] = True
+            self.task_Data[self.ID + 1] = is_student_card
+            
+            self.task_Ready[self.ID] = False
+
+        return ("[0]" + is_student_card)
+
+# Test
+if __name__ == "__main__":
+    camera = Camera()
+    task_Ready = [True, True, True, True]
+    task_Data = ["", "", "", ""]
+    detector = StudentCardDetector(0, task_Ready, task_Data, camera.Run)
+    while True:
+        print(detector.Run())
+        # time.sleep(1)
 
