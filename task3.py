@@ -1,15 +1,19 @@
 import winsound
-import openpyxl
+import gspread
+
 
 class StudentIDChecker:
     def __init__(self, _ID, _task_Ready, _task_Data):
         print("Init task 3")
 
-        # Load the buslist.xlsx file
-        self.source_excel_file = ".\\excel\\buslist.xlsx"
+        # Open spreadsheet "BusList"
+        gc = gspread.service_account(filename="./gspread/service_account.json")
+        sheet = gc.open("BusList")
+        work_sheet = sheet.worksheet("Bus List")
 
-        workbook = openpyxl.load_workbook(self.source_excel_file)  #Open file
-        self.sheet = workbook['Sheet1']  #Access sheet
+        self.records = work_sheet.get_all_records()
+        # print(self.records[0]['Student ID'])
+
 
         self.ID = _ID
         self.task_Ready = _task_Ready
@@ -28,15 +32,14 @@ class StudentIDChecker:
         print(f"Checking if {student_id} has registered...")
 
         student_name = ""
-        student_found = False
-        for row in self.sheet.iter_rows(min_row=2, values_only=True):  #Start form the second row, because the first one is title
-            id_in_list = str(row[0])
-            if id_in_list == student_id:
-                student_name = row[1]
-                student_found = True  # Found
+
+        for row in self.records:  #Start form the second row, because the first one is title
+            registered_id = str(row['Student ID'])
+            if registered_id == student_id:
+                student_name = row['Full Name']
                 break
 
-        if student_found:
+        if student_name:  # is not "": found in bus list
             print(f"{student_id}_{student_name} is in the bus list")
             
             #Print 'Beep' to notificate that the process ended and that student is in the bus list

@@ -1,5 +1,5 @@
 import os
-import openpyxl
+import gspread
 import time
 from datetime import datetime
 
@@ -9,19 +9,24 @@ class BusRecorder:
         print("Init task 4")
 
         self.number_of_seats = 3
+        gc = gspread.service_account(filename="./gspread/service_account.json")
 
-        self.folder_path = ".\\excel\\buslog\\" #the path to the folder that stores data
         current_date = datetime.now().strftime("%Y-%m-%d") #the day 
-        self.excel_file_path = os.path.join(self.folder_path, f"{current_date}.xlsx") #the path to the file excel of current day
         
-        #if the file excel of current day is not exists, it will create ones_ this can ensure that one day only has one 1 file Excel
-        if not os.path.exists(self.excel_file_path):
-            self.workbook = openpyxl.Workbook()
-            self.sheet = self.workbook.active
-            self.sheet.title = "buslog"
-            row_to_insert = ["Student ID", "Full name", "Time"]
-            self.workbook['buslog'].append(row_to_insert)
-            self.workbook.save(self.excel_file_path)
+        try:  # Try to open today's sheet
+            sheet = gc.open(current_date)
+            self.work_sheet = sheet.sheet1
+        except:  # Today's sheet does not exist
+            # Create a new one
+            sheet = gc.create(current_date)
+            # Share to your account to view
+            sheet.share('10422075@student.vgu.edu.vn', perm_type='user', role='writer')
+            self.work_sheet = sheet.sheet1
+
+            # Add titles to columns
+            content = ["Student ID", "Full Name", "Time"]
+            (self.work_sheet).append_row(content, table_range="A1:C1")
+
 
         self.ID = _ID
         self.task_Ready = _task_Ready
@@ -37,33 +42,17 @@ class BusRecorder:
 
         print("#"*30)
         print(f"Adding {student_name} to the bus log file...")
-
-        #update information to file Excel
         
         if (self.number_of_student_on_bus < self.number_of_seats):
-            self.workbook = openpyxl.load_workbook(self.excel_file_path)
-            self.sheet = self.workbook['buslog']
-            
-            # Check if the student have already entered the bus
-            update = False
-            for row in self.sheet.iter_rows(min_row=2, values_only=True):  #Start form the second row, because the first one is title
-                if row[0] == student_id:
-                    update = True
-                    break
+            current_time = time.strftime("%H:%M:%S %d-%m-%Y")
 
-            # Only update bus log if that student haven't entered the bus beforehand
-            if not update:
-                current_time = time.strftime("%H:%M:%S %d-%m-%Y")
-                
-                row_to_insert = [student_id, student_name, current_time]
-                
-                self.sheet.append(row_to_insert)
-                self.workbook.save(self.excel_file_path)
-                self.number_of_student_on_bus +=1
+            content = [student_id, student_name, current_time]
+            (self.work_sheet).append_row(content, table_range="A1:C1")
+
+            self.number_of_student_on_bus +=1
 
         else:
             print("Already full\n")
-
 
         
         # Last task in the chain

@@ -9,7 +9,7 @@ from Adafruit_IO import MQTTClient
 class AdafruitServer:
     AIO_FEED_ID = ['']
     AIO_USERNAME = 'Project_intro_CS'
-    AIO_KEY = 'aio_iowj56Cp03DXMsd5YBLsVeXfi1wj'
+    AIO_KEY = 'aio_GUrK63hND8YaPiBzIpSFUGxAWIoP'
 
 
     # IoT
