@@ -1,4 +1,3 @@
-import os
 import gspread
 import time
 from datetime import datetime
@@ -32,13 +31,8 @@ class BusRecorder:
         self.task_Ready = _task_Ready
         self.task_Data = _task_Data
 
-    def Run(self):
+    def Run(self, student_name, student_id):
         '''Return "Full" if the bus is full, "Available" if the bus still has empty seat(s).'''
-        
-        if (not self.task_Ready[self.ID]):
-            return "[i]"
-
-        student_id, student_name = self.task_Data[self.ID].split('|')
 
         print("#"*30)
         print(f"Adding {student_name} to the bus log file...")
@@ -54,15 +48,25 @@ class BusRecorder:
         else:
             print("Already full\n")
 
-        
+        bus_state = str(self.number_of_student_on_bus) + '/' + str(self.number_of_seats)
+
+        return bus_state
+    
+
+    def RunTask(self):        
+        if (not self.task_Ready[self.ID]):
+            return "[i]"
+
+        student_id, student_name = self.task_Data[self.ID].split('|')
+        bus_state = self.Run(student_id, student_name)
+
         # Last task in the chain
         self.task_Ready[self.ID] = False
         # Restart the cycle: return to the first task
         self.task_Ready[0] = True
 
-        bus_state = str(self.number_of_student_on_bus) + '/' + str(self.number_of_seats)
-
         return "[3]" + bus_state
+
 
 if __name__ == "__main__":
     bus = BusRecorder()
