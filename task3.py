@@ -19,15 +19,10 @@ class StudentIDChecker:
         self.task_Ready = _task_Ready
         self.task_Data = _task_Data
 
-    def Run(self):
+    def Run(self, student_id):
         '''Check if student_id has registered for bus service.
         Return the name of the student if YES, an empty string if NO.''' 
         
-        if (not self.task_Ready[self.ID]):
-            return "[i]"
-
-        student_id = self.task_Data[self.ID]
-
         print("#"*30)
         print(f"Checking if {student_id} has registered...")
 
@@ -49,6 +44,14 @@ class StudentIDChecker:
         else:
             print(f"{student_id} is not in the bus list\n")
 
+        return student_name
+    
+    def RunTask(self):
+        if (not self.task_Ready[self.ID]):
+            return "[i]"
+
+        student_id = self.task_Data[self.ID]
+        student_name = self.Run(student_id)
 
         # Creating the cycle: task1 -> task2 -> task3 -> task4
         if (student_name != ""):
