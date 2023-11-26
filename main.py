@@ -14,17 +14,17 @@ task_Data = ["", "", "", ""]
 
 camera = Camera()
 
-task1 = StudentCardDetector(0, task_Ready, task_Data, camera.Run)
-task2 = FaceRecognizer(1, task_Ready, task_Data, camera.Run)
+task1 = StudentCardDetector(0, task_Ready, task_Data, camera)
+task2 = FaceRecognizer(1, task_Ready, task_Data, camera)
 task3 = StudentIDChecker(2, task_Ready, task_Data)
 task4 = BusRecorder(3, task_Ready, task_Data)
 task5 = AdafruitServer(latest_output)
 
 scheduler.SCH_Add_Task(task5.Run, 1000,500)
-scheduler.SCH_Add_Task(task1.Run, 1000,5000)
-scheduler.SCH_Add_Task(task2.Run, 2000,1000)
-scheduler.SCH_Add_Task(task3.Run, 3000,1000)
-scheduler.SCH_Add_Task(task4.Run, 4000,1000)
+scheduler.SCH_Add_Task(task1.RunTask, 1000,5000)
+scheduler.SCH_Add_Task(task2.RunTask, 2000,1000)
+scheduler.SCH_Add_Task(task3.RunTask, 3000,1000)
+scheduler.SCH_Add_Task(task4.RunTask, 4000,1000)
 
 # Run the first task
 task_Ready[0] = True
