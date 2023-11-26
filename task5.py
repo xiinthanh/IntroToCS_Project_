@@ -1,15 +1,11 @@
 import sys
-import random
-import time
-import requests
-from random import randint
 from Adafruit_IO import MQTTClient
 
 
 class AdafruitServer:
     AIO_FEED_ID = ['']
     AIO_USERNAME = 'Project_intro_CS'
-    AIO_KEY = 'aio_GUrK63hND8YaPiBzIpSFUGxAWIoP'
+    AIO_KEY = 'aio_NKBj01pBaDI0pBe8NpbcZzmonWiD'
 
 
     # IoT
@@ -52,9 +48,6 @@ class AdafruitServer:
         return
 
     def Run(self):
-        # Debug
-        # print("prev_data: ", self.prev_data)
-        # print("data: ", self.data)
         if (self.prev_data == self.data):
             # Does not have any new data to post
             return '[i]'
@@ -93,6 +86,9 @@ class AdafruitServer:
                 self.client.publish('student-face', 0)
         elif (task_ID == '[3]'):
             self.client.publish('bus-status', task_Data)
+            no_student, no_seat = task_Data.split('/')
+            if (no_student == no_seat):
+                message = 'Sorry, the bus is already full.'
 
         self.prev_data = self.data.copy()
         if message:
@@ -102,7 +98,8 @@ class AdafruitServer:
 
 
 if __name__ == '__main__':
-    
+    import time
+
     uploader = AdafruitServer()
     while True:
         time.sleep(5)
